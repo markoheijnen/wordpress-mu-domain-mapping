@@ -1,3 +1,8 @@
+2013-05-?? ??:?? markoheijnen
+	* Fix notices
+	* Split home and siteurl values to make it work when WordPress code is in a subdirectory
+	* Fix customizer
+
 2013-03-22 10:54  donncha
 
 	* readme.txt: Bump stable tag and version tested
