@@ -515,38 +515,52 @@ function domain_mapping_siteurl( $setting ) {
 	// To reduce the number of database queries, save the results the first time we encounter each blog ID.
 	static $return_url = array();
 
+	$option_key = 'home';
+
+	if( 'pre_option_siteurl' == current_filter() )
+		$option_key = 'siteurl';
+
 	$wpdb->dmtable = $wpdb->base_prefix . 'domain_mapping';
 
-	if ( !isset( $return_url[ $wpdb->blogid ] ) ) {
+	if ( ! isset( $return_url[ $wpdb->blogid ] ) || ! isset( $return_url[ $wpdb->blogid ][ $option_key ] ) ) {
+		if( ! isset( $return_url[ $wpdb->blogid ] ) )
+			$return_url[ $wpdb->blogid ] = array();
+
 		$s = $wpdb->suppress_errors();
 
 		if ( get_site_option( 'dm_no_primary_domain' ) == 1 ) {
 			$domain = $wpdb->get_var( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}' AND domain = '" . $wpdb->escape( $_SERVER[ 'HTTP_HOST' ] ) . "' LIMIT 1" );
+
 			if ( null == $domain ) {
-				$return_url[ $wpdb->blogid ] = untrailingslashit( get_original_url( "siteurl" ) );
-				return $return_url[ $wpdb->blogid ];
+				$return_url[ $wpdb->blogid ][ $option_key ] = untrailingslashit( get_original_url( $option_key ) );
+				return $return_url[ $wpdb->blogid ][ $option_key ];
 			}
 		} else {
 			// get primary domain, if we don't have one then return original url.
 			$domain = $wpdb->get_var( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}' AND active = 1 LIMIT 1" );
+
 			if ( null == $domain ) {
-				$return_url[ $wpdb->blogid ] = untrailingslashit( get_original_url( "siteurl" ) );
-				return $return_url[ $wpdb->blogid ];
+				$return_url[ $wpdb->blogid ][ $option_key ] = untrailingslashit( get_original_url( $option_key ) );
+				return $return_url[ $wpdb->blogid ][ $option_key ];
 			}
 		}
 
 		$wpdb->suppress_errors( $s );
+
 		if ( false == isset( $_SERVER[ 'HTTPS' ] ) )
 			$_SERVER[ 'HTTPS' ] = 'Off';
+
 		$protocol = ( 'on' == strtolower( $_SERVER[ 'HTTPS' ] ) ) ? 'https://' : 'http://';
+
 		if ( $domain ) {
-			$return_url[ $wpdb->blogid ] = untrailingslashit( $protocol . $domain  );
-			$setting = $return_url[ $wpdb->blogid ];
+			$return_url[ $wpdb->blogid ][ $option_key ] = untrailingslashit( $protocol . $domain  );
+			$setting = $return_url[ $wpdb->blogid ][ $option_key ];
 		} else {
-			$return_url[ $wpdb->blogid ] = false;
+			$return_url[ $wpdb->blogid ][ $option_key ] = false;
 		}
-	} elseif ( $return_url[ $wpdb->blogid ] !== FALSE) {
-		$setting = $return_url[ $wpdb->blogid ];
+	}
+	elseif ( $return_url[ $wpdb->blogid ][ $option_key ] !== FALSE ) {
+		$setting = $return_url[ $wpdb->blogid ][ $option_key ];
 	}
 
 	return $setting;
