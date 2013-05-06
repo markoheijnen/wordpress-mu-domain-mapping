@@ -510,7 +510,7 @@ function dm_manage_page() {
 }
 
 function domain_mapping_siteurl( $setting ) {
-	global $wpdb, $current_blog;
+	global $wpdb, $current_site;
 
 	// To reduce the number of database queries, save the results the first time we encounter each blog ID.
 	static $return_url = array();
@@ -553,7 +553,11 @@ function domain_mapping_siteurl( $setting ) {
 		$protocol = ( 'on' == strtolower( $_SERVER[ 'HTTPS' ] ) ) ? 'https://' : 'http://';
 
 		if ( $domain ) {
-			$return_url[ $wpdb->blogid ][ $option_key ] = untrailingslashit( $protocol . $domain  );
+			if( 'siteurl' == $option_key )
+				$return_url[ $wpdb->blogid ][ $option_key ] = untrailingslashit( $protocol . $domain . $current_site->path );
+			else 
+				$return_url[ $wpdb->blogid ][ $option_key ] = untrailingslashit( $protocol . $domain );
+
 			$setting = $return_url[ $wpdb->blogid ][ $option_key ];
 		} else {
 			$return_url[ $wpdb->blogid ][ $option_key ] = false;
