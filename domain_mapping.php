@@ -350,10 +350,14 @@ function dm_handle_actions() {
 			case "add":
 				do_action('dm_handle_actions_add', $domain);
 				if( null == $wpdb->get_row( "SELECT blog_id FROM {$wpdb->blogs} WHERE domain = '$domain'" ) && null == $wpdb->get_row( "SELECT blog_id FROM {$wpdb->dmtable} WHERE domain = '$domain'" ) ) {
-					if ( $_POST[ 'primary' ] ) {
+					$primary = 0;
+
+					if ( isset( $_POST[ 'primary' ] ) ) {
 						$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->dmtable} SET active = 0 WHERE blog_id = %d", $wpdb->blogid ) );
+						$primary = 1;
 					}
-					$wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->dmtable} ( `id` , `blog_id` , `domain` , `active` ) VALUES ( NULL, %d, %s, %d )", $wpdb->blogid, $domain, $_POST[ 'primary' ] ) );
+
+					$wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->dmtable} ( `id` , `blog_id` , `domain` , `active` ) VALUES ( NULL, %d, %s, %d )", $wpdb->blogid, $domain, $primary ) );
 					wp_redirect( add_query_arg( array( 'updated' => 'add' ), $url ) );
 					exit;
 				} else {
