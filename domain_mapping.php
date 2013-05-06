@@ -556,35 +556,38 @@ function domain_mapping_siteurl( $setting ) {
 function get_original_url( $url, $blog_id = 0 ) {
 	global $wpdb;
 
-	if ( $blog_id != 0 ) {
-		$id = $blog_id; 
-	} else {
+	if ( $blog_id != 0 )
+		$id = $blog_id;
+	else
 		$id = $wpdb->blogid;
-	}
+
+	if( 'home' != $url && 'siteurl' != $url )
+		$url = 'siteurl';
 
 	static $orig_urls = array();
-	if ( ! isset( $orig_urls[ $id ] ) ) {
+	if ( ! isset( $orig_urls[ $id ] ) || ! isset( $orig_urls[ $id ][ $url ] ) ) {
 		if ( defined( 'DOMAIN_MAPPING' ) ) 
 			remove_filter( 'pre_option_' . $url, 'domain_mapping_' . $url );
-		if ( $blog_id == 0 ) {
+
+		if ( $blog_id == 0 )
 			$orig_url = get_option( $url );
-		} else {
+		else
 			$orig_url = get_blog_option( $blog_id, $url );
-		}
-		if ( isset( $_SERVER[ 'HTTPS' ] ) && 'on' == strtolower( $_SERVER[ 'HTTPS' ] ) ) {
+
+		if ( isset( $_SERVER[ 'HTTPS' ] ) && 'on' == strtolower( $_SERVER[ 'HTTPS' ] ) )
 			$orig_url = str_replace( "http://", "https://", $orig_url );
-		} else {
+		else
 			$orig_url = str_replace( "https://", "http://", $orig_url );
-		}
-		if ( $blog_id == 0 ) {
-			$orig_urls[ $wpdb->blogid ] = $orig_url;
-		} else {
-			$orig_urls[ $blog_id ] = $orig_url;
-		}
+
+		if( ! isset( $orig_urls[ $id ] ) )
+			$orig_urls[ $id ] = array();
+
+		$orig_urls[ $id ][ $url ] = $orig_url;
+
 		if ( defined( 'DOMAIN_MAPPING' ) ) 
 			add_filter( 'pre_option_' . $url, 'domain_mapping_' . $url );
 	}
-	return $orig_urls[ $id ];
+	return $orig_urls[ $id ][ $url ];
 }
 
 function domain_mapping_adminurl( $url, $path, $blog_id = 0 ) {
