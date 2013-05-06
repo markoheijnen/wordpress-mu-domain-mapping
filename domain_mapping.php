@@ -271,26 +271,33 @@ function dm_admin_page() {
 	if ( get_site_option( 'dm_user_settings', 'NA' ) == 'NA' )
 		add_site_option( 'dm_user_settings', 1 );
 
-	if ( !empty( $_POST[ 'action' ] ) ) {
+	if ( ! empty( $_POST[ 'action' ] ) ) {
 		check_admin_referer( 'domain_mapping' );
+
 		if ( $_POST[ 'action' ] == 'update' ) {
 			$ipok = true;
 			$ipaddresses = explode( ',', $_POST[ 'ipaddress' ] );
+
 			foreach( $ipaddresses as $address ) {
 				if ( ( $ip = trim( $address ) ) && !preg_match( '|^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$|', $ip ) ) {
 					$ipok = false;
 					break;
 				}
 			}
+
 			if( $ipok )
 				update_site_option( 'dm_ipaddress', $_POST[ 'ipaddress' ] );
+
 			if ( intval( $_POST[ 'always_redirect_admin' ] ) == 0 )
 				$_POST[ 'dm_remote_login' ] = 0; // disable remote login if redirecting to mapped domain
+
 			update_site_option( 'dm_remote_login', intval( $_POST[ 'dm_remote_login' ] ) );
+
 			if ( ! preg_match( '/(--|\.\.)/', $_POST[ 'cname' ] ) && preg_match( '|^([a-zA-Z0-9-\.])+$|', $_POST[ 'cname' ] ) )
 				update_site_option( 'dm_cname', stripslashes( $_POST[ 'cname' ] ) );
 			else
 				update_site_option( 'dm_cname', '' );
+
 			update_site_option( 'dm_301_redirect', isset( $_POST[ 'permanent_redirect' ] ) ? intval( $_POST[ 'permanent_redirect' ] ) : 0 );
 			update_site_option( 'dm_redirect_admin', isset( $_POST[ 'always_redirect_admin' ] ) ? intval( $_POST[ 'always_redirect_admin' ] ) : 0 );
 			update_site_option( 'dm_user_settings', isset( $_POST[ 'dm_user_settings' ] ) ? intval( $_POST[ 'dm_user_settings' ] ) : 0 );
@@ -443,10 +450,10 @@ function dm_manage_page() {
 		return false;
 	}
 
-	if ( false == isset( $_SERVER[ 'HTTPS' ] ) )
-		$_SERVER[ 'HTTPS' ] = 'Off';
-	$protocol = ( 'on' == strtolower( $_SERVER[ 'HTTPS' ] ) ) ? 'https://' : 'http://';
+	$protocol = is_ssl() ? 'https://' : 'http://'; 
+
 	$domains = $wpdb->get_results( "SELECT * FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}'", ARRAY_A );
+
 	if ( is_array( $domains ) && !empty( $domains ) ) {
 		$orig_url = parse_url( get_original_url( 'siteurl' ) );
 		$domains[] = array( 'domain' => $orig_url[ 'host' ], 'path' => $orig_url[ 'path' ], 'active' => 0 );
@@ -547,10 +554,7 @@ function domain_mapping_siteurl( $setting ) {
 
 		$wpdb->suppress_errors( $s );
 
-		if ( false == isset( $_SERVER[ 'HTTPS' ] ) )
-			$_SERVER[ 'HTTPS' ] = 'Off';
-
-		$protocol = ( 'on' == strtolower( $_SERVER[ 'HTTPS' ] ) ) ? 'https://' : 'http://';
+		$protocol = is_ssl() ? 'https://' : 'http://'; 
 
 		if ( $domain ) {
 			if( 'siteurl' == $option_key )
@@ -592,7 +596,7 @@ function get_original_url( $url, $blog_id = 0 ) {
 		else
 			$orig_url = get_blog_option( $blog_id, $url );
 
-		if ( isset( $_SERVER[ 'HTTPS' ] ) && 'on' == strtolower( $_SERVER[ 'HTTPS' ] ) )
+		if ( is_ssl() )
 			$orig_url = str_replace( "http://", "https://", $orig_url );
 		else
 			$orig_url = str_replace( "https://", "http://", $orig_url );
@@ -702,9 +706,7 @@ if ( isset( $_GET[ 'dm' ] ) )
 function remote_logout_loader() {
 	global $current_site, $current_blog, $wpdb;
 	$wpdb->dmtablelogins = $wpdb->base_prefix . 'domain_mapping_logins';
-	if ( false == isset( $_SERVER[ 'HTTPS' ] ) )
-		$_SERVER[ 'HTTPS' ] = 'Off';
-	$protocol = ( 'on' == strtolower( $_SERVER[ 'HTTPS' ] ) ) ? 'https://' : 'http://';
+	$protocol = is_ssl() ? 'https://' : 'http://';
 	$hash = get_dm_hash();
 	$key = md5( time() );
 	$wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->dmtablelogins} ( `id`, `user_id`, `blog_id`, `t` ) VALUES( %s, 0, %d, NOW() )", $key, $current_blog->blog_id ) );
@@ -728,10 +730,9 @@ function redirect_to_mapped_domain() {
 	if ( is_a( $wp_customize, 'WP_Customize_Manager' ) )
 		return;
 
-	if ( !isset( $_SERVER[ 'HTTPS' ] ) )
-		$_SERVER[ 'HTTPS' ] = 'off';
-	$protocol = ( 'on' == strtolower( $_SERVER['HTTPS'] ) ) ? 'https://' : 'http://';
+	$protocol = is_ssl() ? 'https://' : 'http://';
 	$url = domain_mapping_siteurl( false );
+
 	if ( $url && $url != untrailingslashit( $protocol . $current_blog->domain . $current_blog->path ) ) {
 		$redirect = get_site_option( 'dm_301_redirect' ) ? '301' : '302';
 		if ( ( defined( 'VHOST' ) && constant( "VHOST" ) != 'yes' ) || ( defined( 'SUBDOMAIN_INSTALL' ) && constant( 'SUBDOMAIN_INSTALL' ) == false ) ) {
@@ -760,9 +761,8 @@ function remote_login_js() {
 
 	$wpdb->dmtablelogins = $wpdb->base_prefix . 'domain_mapping_logins';
 	$hash = get_dm_hash();
-	if ( false == isset( $_SERVER[ 'HTTPS' ] ) )
-		$_SERVER[ 'HTTPS' ] = 'Off';
-	$protocol = ( 'on' == strtolower( $_SERVER[ 'HTTPS' ] ) ) ? 'https://' : 'http://';
+	$protocol = is_ssl() ? 'https://' : 'http://';
+
 	if ( $_GET[ 'dm' ] == $hash ) {
 		if ( $_GET[ 'action' ] == 'load' ) {
 			if ( !is_user_logged_in() )
@@ -806,11 +806,9 @@ function remote_login_js_loader() {
 	if ( 0 == get_site_option( 'dm_remote_login' ) || is_user_logged_in() )
 		return false;
 
-	if ( false == isset( $_SERVER[ 'HTTPS' ] ) )
-		$_SERVER[ 'HTTPS' ] = 'Off';
-	$protocol = ( 'on' == strtolower( $_SERVER[ 'HTTPS' ] ) ) ? 'https://' : 'http://';
+	$protocol = is_ssl() ? 'https://' : 'http://';
 	$hash = get_dm_hash();
-	echo "<script src='//{$current_site->domain}{$current_site->path}?dm={$hash}&amp;action=load&amp;blogid={$current_blog->blog_id}&amp;siteid={$current_blog->site_id}&amp;t=" . mt_rand() . "&amp;back=" . urlencode( $protocol . $current_blog->domain . $_SERVER[ 'REQUEST_URI' ] ) . "' type='text/javascript'></script>";
+	echo "<script src='{$protocol}{$current_site->domain}{$current_site->path}?dm={$hash}&amp;action=load&amp;blogid={$current_blog->blog_id}&amp;siteid={$current_blog->site_id}&amp;t=" . mt_rand() . "&amp;back=" . urlencode( $protocol . $current_blog->domain . $_SERVER[ 'REQUEST_URI' ] ) . "' type='text/javascript'></script>";
 }
 
 // delete mapping if blog is deleted
