@@ -581,7 +581,7 @@ function get_original_url( $url, $blog_id = 0 ) {
 	static $orig_urls = array();
 	if ( ! isset( $orig_urls[ $id ] ) || ! isset( $orig_urls[ $id ][ $url ] ) ) {
 		if ( defined( 'DOMAIN_MAPPING' ) ) 
-			remove_filter( 'pre_option_' . $url, 'domain_mapping_' . $url );
+			remove_filter( 'pre_option_' . $url, 'domain_mapping_siteurl' );
 
 		if ( $blog_id == 0 )
 			$orig_url = get_option( $url );
@@ -599,7 +599,7 @@ function get_original_url( $url, $blog_id = 0 ) {
 		$orig_urls[ $id ][ $url ] = $orig_url;
 
 		if ( defined( 'DOMAIN_MAPPING' ) ) 
-			add_filter( 'pre_option_' . $url, 'domain_mapping_' . $url );
+			add_filter( 'pre_option_' . $url, 'domain_mapping_siteurl' );
 	}
 	return $orig_urls[ $id ][ $url ];
 }
