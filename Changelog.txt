@@ -1,14 +1,81 @@
-2011-07-03 19:20 wpmuguru
+2013-03-22 10:54  donncha
 
-	* Changelog.txt - update changelog, Bump version to 0.5.4.1
+	* readme.txt: Bump stable tag and version tested
+
+2013-03-22 10:00  donncha
+
+	* domain_mapping.php: * Replace HTTPS checks with is_ssl() checks
+	  * Fix typo in Javascript login loader
+
+2013-02-25 22:42  wpmuguru
+
+	* domain_mapping.php, readme.txt: remove support for pre 3.1,
+	  update for 3.5 WP install in own folder
+
+2013-01-30 23:16  wpmuguru
+
+	* domain_mapping.php: fix warnings & mixed protocols warning
+
+2012-09-06 17:07  wpmuguru
+
+	* domain_mapping.php: fix warning, props simonhayre
+
+2012-05-11 23:10  wpmuguru
+
+	* domain_mapping.php: disable domain redirect for theme customizer
+	  in 3.4
+
+2012-01-21 16:44  wpmuguru
+
+	* readme.txt: update tested to version
+
+2012-01-21 16:43  wpmuguru
+
+	* readme.txt, sunrise.php: tag & release 0.5.4.2
+
+2012-01-07 17:43  wpmuguru
+
+	* domain_mapping.php: don\'t redirect on post preview
+
+2011-12-18 23:56  wpmuguru
+
+	* domain_mapping.php: another add_site_option
+
+2011-12-15 03:01  wpmuguru
+
+	* domain_mapping.php: s/add_site_option/update_site_option/
+
+2011-10-08 14:18  wpmuguru
+
+	* domain_mapping.php: strtolower domain, bug fixes
+
+2011-08-17 02:17  wpmuguru
+
+	* domain_mapping.php: attempt no redirect on admin-ajax.php
+
+2011-07-21 02:13  wpmuguru
+
+	* domain_mapping.php: s/==/=/
+
+2011-07-19 21:48  wpmuguru
+
+	* readme.txt: bump repo
+
+2011-07-03 19:25  wpmuguru
+
+	* Changelog.txt, readme.txt: bump 0.5.4.1, tested 3.2 compatibility
 
 2011-05-27 16:40  wpmuguru
 
-	* domain_mapping.php: fix warnings, props chip Bennett
+	* domain_mapping.php: fix notice, props Chip B
 
 2011-03-13 15:00  wpmuguru
 
-	* domain_mapping.php: custom content dir in warnings, always create dm tables
+	* domain_mapping.php: custom content dir, always check for dm table
+
+2011-03-01 11:00  donncha
+
+	* Changelog.txt: Updated changelog
 
 2011-03-01 10:59  donncha
 
