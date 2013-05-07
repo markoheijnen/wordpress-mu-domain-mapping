@@ -144,14 +144,18 @@ function dm_domains_admin() {
 				}
 			break;
 			case "save":
-				if ( $_POST[ 'blog_id' ] != 0 AND 
+				if (
+					isset( $_POST['blog_id'] ) AND
+					$_POST[ 'blog_id' ] != 0 AND 
 					$_POST[ 'blog_id' ] != 1 AND 
 					null == $wpdb->get_var( $wpdb->prepare( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id != %d AND domain = %s", $_POST[ 'blog_id' ], $domain ) ) 
 				) {
 					$active = 0;
 
-					if( isset( $_POST[ 'active' ] ) )
+					if( $_POST[ 'active' ] ) {
+						$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->dmtable} SET active = 0 WHERE blog_id = %d", $_POST[ 'blog_id' ] ) );
 						$active = 1;
+					}
 
 					if ( $_POST[ 'orig_domain' ] == '' ) {
 						$wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->dmtable} ( `blog_id`, `domain`, `active` ) VALUES ( %d, %s, %d )", $_POST[ 'blog_id' ], $domain, $active ) );
