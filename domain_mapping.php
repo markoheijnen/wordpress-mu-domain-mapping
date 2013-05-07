@@ -152,7 +152,7 @@ function dm_domains_admin() {
 				) {
 					$active = 0;
 
-					if( $_POST[ 'active' ] ) {
+					if( isset( $_POST[ 'active' ] ) ) {
 						$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->dmtable} SET active = 0 WHERE blog_id = %d", $_POST[ 'blog_id' ] ) );
 						$active = 1;
 					}
