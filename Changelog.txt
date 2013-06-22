@@ -1,3 +1,8 @@
+2013-06-?? ??:?? markoheijnen
+	* Fix notices
+	* Fix customizer
+	* Fix bug that allows multiple primary domains through the network settings page
+
 2013-03-22 10:54  donncha
 
 	* readme.txt: Bump stable tag and version tested
