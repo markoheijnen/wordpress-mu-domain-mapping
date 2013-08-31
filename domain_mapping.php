@@ -590,8 +590,9 @@ function get_original_url( $url, $blog_id = 0 ) {
 			$orig_url = get_option( $url );
 		} else {
 			$orig_url = get_blog_option( $blog_id, $url );
+		}
 
-		if ( is_ssl() )
+		if ( is_ssl() ) {
 			$orig_url = str_replace( "http://", "https://", $orig_url );
 		} else {
 			$orig_url = str_replace( "https://", "http://", $orig_url );
