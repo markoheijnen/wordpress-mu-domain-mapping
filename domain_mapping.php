@@ -29,6 +29,7 @@ text-domain: wordpress-mu-domain-mapping
 */
 
 class WordPress_MU_Domain_Mapping {
+	private static $return_url = array();
 
 	public function __construct() {
 		if( is_admin() ) {
@@ -176,9 +177,6 @@ class WordPress_MU_Domain_Mapping {
 	public function domain_mapping_siteurl( $setting ) {
 		global $wpdb, $current_site;
 
-		// To reduce the number of database queries, save the results the first time we encounter each blog ID.
-		static $return_url = array();
-
 		$option_key = 'home';
 
 		if( 'pre_option_siteurl' == current_filter() )
@@ -186,9 +184,9 @@ class WordPress_MU_Domain_Mapping {
 
 		$wpdb->dmtable = $wpdb->base_prefix . 'domain_mapping';
 
-		if ( ! isset( $return_url[ $wpdb->blogid ] ) || ! isset( $return_url[ $wpdb->blogid ][ $option_key ] ) ) {
-			if( ! isset( $return_url[ $wpdb->blogid ] ) )
-				$return_url[ $wpdb->blogid ] = array();
+		if ( ! isset( self::$return_url[ $wpdb->blogid ] ) || ! isset( self::$return_url[ $wpdb->blogid ][ $option_key ] ) ) {
+			if( ! isset( self::$return_url[ $wpdb->blogid ] ) )
+				self::$return_url[ $wpdb->blogid ] = array();
 
 			$s = $wpdb->suppress_errors();
 
@@ -196,8 +194,8 @@ class WordPress_MU_Domain_Mapping {
 				$domain = $wpdb->get_var( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}' AND domain = '" . $wpdb->escape( $_SERVER[ 'HTTP_HOST' ] ) . "' LIMIT 1" );
 
 				if ( null == $domain ) {
-					$return_url[ $wpdb->blogid ][ $option_key ] = untrailingslashit( $this->get_original_url( $option_key ) );
-					return $return_url[ $wpdb->blogid ][ $option_key ];
+					self::$return_url[ $wpdb->blogid ][ $option_key ] = untrailingslashit( $this->get_original_url( $option_key ) );
+					return self::$return_url[ $wpdb->blogid ][ $option_key ];
 				}
 			}
 			else {
@@ -205,8 +203,8 @@ class WordPress_MU_Domain_Mapping {
 				$domain = $wpdb->get_var( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}' AND active = 1 LIMIT 1" );
 
 				if ( null == $domain ) {
-					$return_url[ $wpdb->blogid ][ $option_key ] = untrailingslashit( $this->get_original_url( $option_key ) );
-					return $return_url[ $wpdb->blogid ][ $option_key ];
+					self::$return_url[ $wpdb->blogid ][ $option_key ] = untrailingslashit( $this->get_original_url( $option_key ) );
+					return self::$return_url[ $wpdb->blogid ][ $option_key ];
 				}
 			}
 
@@ -216,18 +214,18 @@ class WordPress_MU_Domain_Mapping {
 
 			if ( $domain ) {
 				if( 'siteurl' == $option_key )
-					$return_url[ $wpdb->blogid ][ $option_key ] = untrailingslashit( $protocol . $domain . $current_site->path );
+					self::$return_url[ $wpdb->blogid ][ $option_key ] = untrailingslashit( $protocol . $domain . $current_site->path );
 				else 
-					$return_url[ $wpdb->blogid ][ $option_key ] = untrailingslashit( $protocol . $domain );
+					self::$return_url[ $wpdb->blogid ][ $option_key ] = untrailingslashit( $protocol . $domain );
 
-				$setting = $return_url[ $wpdb->blogid ][ $option_key ];
+				$setting = self::$return_url[ $wpdb->blogid ][ $option_key ];
 			}
 			else {
-				$return_url[ $wpdb->blogid ][ $option_key ] = false;
+				self::$return_url[ $wpdb->blogid ][ $option_key ] = false;
 			}
 		}
-		elseif ( $return_url[ $wpdb->blogid ][ $option_key ] !== FALSE ) {
-			$setting = $return_url[ $wpdb->blogid ][ $option_key ];
+		elseif ( self::$return_url[ $wpdb->blogid ][ $option_key ] !== FALSE ) {
+			$setting = self::$return_url[ $wpdb->blogid ][ $option_key ];
 		}
 
 		return $setting;
