@@ -10,9 +10,26 @@ class WordPress_MU_Domain_Mapping_Admin_Network {
 	}
 
 	public function network_menu() {
-		add_submenu_page( 'settings.php', __( 'Domain Mapping', 'wordpress-mu-domain-mapping' ), __( 'Domain Mapping', 'wordpress-mu-domain-mapping' ), 'manage_options', 'dm_admin_page', array( $this, 'admin_page' ) );
-		add_submenu_page( 'settings.php', __( 'Domains', 'wordpress-mu-domain-mapping' ), __( 'Domains', 'wordpress-mu-domain-mapping' ), 'manage_options', 'dm_domains_admin', array( $this, 'domains_page' ) );
-	}
+
+		add_submenu_page(
+			'settings.php',
+			__( 'Domain Mapping', 'wordpress-mu-domain-mapping' ),
+			__( 'Domain Mapping', 'wordpress-mu-domain-mapping' ),
+			'manage_network',
+			'dm_admin_page',
+			array( $this, 'admin_page' )
+		);
+
+		add_submenu_page(
+			'settings.php',
+			__( 'Domains', 'wordpress-mu-domain-mapping' ),
+			__( 'Domains', 'wordpress-mu-domain-mapping' ),
+			'manage_network',
+			'dm_domains_admin',
+			array( $this, 'domains_page' )
+		);
+
+	} // END network_menu()
 
 	public function admin_page() {
 		global $wpdb, $current_site;
