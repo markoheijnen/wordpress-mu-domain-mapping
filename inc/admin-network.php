@@ -32,59 +32,66 @@ class WordPress_MU_Domain_Mapping_Admin_Network {
 	} // END network_menu()
 
 	public function admin_page() {
+
 		global $wpdb, $current_site;
 
-		if ( ! is_super_admin() )
+		if ( ! is_super_admin() ) {
 			return false;
+		}
 
 		WordPress_MU_Domain_Mapping::sunrise_warning();
 		$this->maybe_create_db();
 
-		if ( $current_site->path != "/" )
+		if ( $current_site->path != "/" ) {
 			wp_die( sprintf( __( "<strong>Warning!</strong> This plugin will only work if WordPress is installed in the root directory of your webserver. It is currently installed in &#8217;%s&#8217;.", "wordpress-mu-domain-mapping" ), $current_site->path ) );
-
+		}
 		// set up some defaults
-		if ( get_site_option( 'dm_remote_login', 'NA' ) == 'NA' )
+		if ( get_site_option( 'dm_remote_login', 'NA' ) == 'NA' ) {
 			add_site_option( 'dm_remote_login', 1 );
-
-		if ( get_site_option( 'dm_redirect_admin', 'NA' ) == 'NA' )
+		}
+		if ( get_site_option( 'dm_redirect_admin', 'NA' ) == 'NA' ) {
 			add_site_option( 'dm_redirect_admin', 1 );
-
-		if ( get_site_option( 'dm_user_settings', 'NA' ) == 'NA' )
+		}
+		if ( get_site_option( 'dm_user_settings', 'NA' ) == 'NA' ) {
 			add_site_option( 'dm_user_settings', 1 );
-
+		}
 		if ( ! empty( $_POST[ 'action' ] ) ) {
+
 			check_admin_referer( 'domain_mapping' );
 
 			if ( $_POST[ 'action' ] == 'update' ) {
+
 				$ipok = true;
 				$ipaddresses = explode( ',', $_POST[ 'ipaddress' ] );
 
-				foreach( $ipaddresses as $address ) {
+				foreach ( $ipaddresses as $address ) {
 					if ( ( $ip = trim( $address ) ) && ! preg_match( '|^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$|', $ip ) ) {
 						$ipok = false;
 						break;
 					}
 				}
 
-				if( $ipok )
+				if ( $ipok ) {
 					update_site_option( 'dm_ipaddress', $_POST[ 'ipaddress' ] );
-
-				if ( intval( $_POST[ 'always_redirect_admin' ] ) == 0 )
+				}
+				if ( intval( $_POST[ 'always_redirect_admin' ] ) == 0 ) {
 					$_POST[ 'dm_remote_login' ] = 0; // disable remote login if redirecting to mapped domain
-
+				}
 				update_site_option( 'dm_remote_login', intval( $_POST[ 'dm_remote_login' ] ) );
 
-				if ( ! preg_match( '/(--|\.\.)/', $_POST[ 'cname' ] ) && preg_match( '|^([a-zA-Z0-9-\.])+$|', $_POST[ 'cname' ] ) )
+				if ( ! preg_match( '/(--|\.\.)/', $_POST[ 'cname' ] ) && preg_match( '|^([a-zA-Z0-9-\.])+$|', $_POST[ 'cname' ] ) ) {
 					update_site_option( 'dm_cname', stripslashes( $_POST[ 'cname' ] ) );
-				else
+				} else {
 					update_site_option( 'dm_cname', '' );
+				}
 
 				update_site_option( 'dm_301_redirect', isset( $_POST[ 'permanent_redirect' ] ) ? intval( $_POST[ 'permanent_redirect' ] ) : 0 );
 				update_site_option( 'dm_redirect_admin', isset( $_POST[ 'always_redirect_admin' ] ) ? intval( $_POST[ 'always_redirect_admin' ] ) : 0 );
 				update_site_option( 'dm_user_settings', isset( $_POST[ 'dm_user_settings' ] ) ? intval( $_POST[ 'dm_user_settings' ] ) : 0 );
 				update_site_option( 'dm_no_primary_domain', isset( $_POST[ 'dm_no_primary_domain' ] ) ? intval( $_POST[ 'dm_no_primary_domain' ] ) : 0 );
+
 			}
+
 		}
 
 		echo '<h3>' . __( 'Domain Mapping Configuration', 'wordpress-mu-domain-mapping' ) . '</h3>';
@@ -121,7 +128,8 @@ class WordPress_MU_Domain_Mapping_Admin_Network {
 		wp_nonce_field( 'domain_mapping' );
 		echo "<p><input class='button-primary' type='submit' value='" . __( "Save", 'wordpress-mu-domain-mapping' ) . "' /></p>";
 		echo "</form><br />";
-	}
+
+	} // END admin_page()
 
 	public function domains_page() {
 		global $wpdb, $current_site;
