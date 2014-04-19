@@ -49,8 +49,8 @@ class WordPress_MU_Domain_Mapping {
 
 
 		if ( defined( 'DOMAIN_MAPPING' ) ) {
-			add_filter( 'pre_option_siteurl', array( $this, 'domain_mapping_siteurl' ) );
-			add_filter( 'pre_option_home', array( $this, 'domain_mapping_siteurl' ) );
+			add_filter( 'pre_option_siteurl', array( __CLASS__, 'domain_mapping_siteurl' ) );
+			add_filter( 'pre_option_home', array( __CLASS__, 'domain_mapping_siteurl' ) );
 
 			add_filter( 'the_content', array( $this, 'domain_mapping_post_content' ) );
 			add_action( 'wp_head', array( $this, 'remote_login_js_loader' ) );
@@ -145,7 +145,7 @@ class WordPress_MU_Domain_Mapping {
 			return;
 
 		$protocol = is_ssl() ? 'https://' : 'http://';
-		$url      = $this->domain_mapping_siteurl( false );
+		$url      = self::domain_mapping_siteurl( false );
 
 		if ( $url && $url != untrailingslashit( $protocol . $current_blog->domain . $current_blog->path ) ) {
 			$redirect = get_site_option( 'dm_301_redirect' ) ? '301' : '302';
@@ -174,7 +174,7 @@ class WordPress_MU_Domain_Mapping {
 	}
 
 
-	public function domain_mapping_siteurl( $setting ) {
+	public static function domain_mapping_siteurl( $setting ) {
 		global $wpdb, $current_site;
 
 		$option_key = 'home';
@@ -194,7 +194,7 @@ class WordPress_MU_Domain_Mapping {
 				$domain = $wpdb->get_var( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}' AND domain = '" . $wpdb->escape( $_SERVER[ 'HTTP_HOST' ] ) . "' LIMIT 1" );
 
 				if ( null == $domain ) {
-					self::$return_url[ $wpdb->blogid ][ $option_key ] = untrailingslashit( $this->get_original_url( $option_key ) );
+					self::$return_url[ $wpdb->blogid ][ $option_key ] = untrailingslashit( self::get_original_url( $option_key ) );
 					return self::$return_url[ $wpdb->blogid ][ $option_key ];
 				}
 			}
@@ -203,7 +203,7 @@ class WordPress_MU_Domain_Mapping {
 				$domain = $wpdb->get_var( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}' AND active = 1 LIMIT 1" );
 
 				if ( null == $domain ) {
-					self::$return_url[ $wpdb->blogid ][ $option_key ] = untrailingslashit( $this->get_original_url( $option_key ) );
+					self::$return_url[ $wpdb->blogid ][ $option_key ] = untrailingslashit( self::get_original_url( $option_key ) );
 					return self::$return_url[ $wpdb->blogid ][ $option_key ];
 				}
 			}
@@ -274,8 +274,8 @@ class WordPress_MU_Domain_Mapping {
 	public function domain_mapping_post_content( $post_content ) {
 		global $wpdb;
 
-		$orig_url = $this->get_original_url( 'siteurl' );
-		$url      = $this->domain_mapping_siteurl( 'NA' );
+		$orig_url = self::get_original_url( 'siteurl' );
+		$url      = self::domain_mapping_siteurl( 'NA' );
 
 		if ( $url == 'NA' )
 			return $post_content;
@@ -299,7 +299,7 @@ class WordPress_MU_Domain_Mapping {
 		if ( ! get_site_option( 'dm_remote_login' ) || ( isset( $_GET[ 'action' ] ) && $_GET[ 'action' ] == 'logout' ) || isset( $_GET[ 'loggedout' ] ) )
 			return false;
 
-		$url = $this->get_original_url( 'siteurl' );
+		$url = self::get_original_url( 'siteurl' );
 
 		if ( $url != site_url() ) {
 			$url .= "/wp-login.php";
@@ -330,7 +330,7 @@ class WordPress_MU_Domain_Mapping {
 		$index = strpos( $url, '/wp-admin' );
 
 		if( $index !== false ) {
-			$url = $this->get_original_url( 'siteurl', $blog_id ) . substr( $url, $index );
+			$url = self::get_original_url( 'siteurl', $blog_id ) . substr( $url, $index );
 
 			// make sure admin_url is ssl if current page is ssl, or admin ssl is forced
 			if( ( is_ssl() || force_ssl_admin() ) && 0 === strpos( $url, 'http://' ) )

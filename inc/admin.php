@@ -241,7 +241,7 @@ class WordPress_MU_Domain_Mapping_Admin {
 			global $current_blog;
 
 			// redirect original url to primary domain wp-admin/ - remote login is disabled!
-			$url = domain_mapping_siteurl( false );
+			$url = WordPress_MU_Domain_Mapping::domain_mapping_siteurl( false );
 			$request_uri = str_replace( $current_blog->path, '/', $_SERVER[ 'REQUEST_URI' ] );
 
 			if ( false === strpos( $url, $_SERVER[ 'HTTP_HOST' ] ) ) {
