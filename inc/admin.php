@@ -165,7 +165,7 @@ class WordPress_MU_Domain_Mapping_Admin {
 
 		if ( ! empty( $_POST[ 'action' ] ) ) {
 
-			$domain = $_POST[ 'domain' ];
+			$domain = sanitize_text_field( $_POST[ 'domain' ] );
 
 			if ( $domain == '' ) {
 				wp_die( __( 'You must enter a domain', 'wordpress-mu-domain-mapping' ) );
