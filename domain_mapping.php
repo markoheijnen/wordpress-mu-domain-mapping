@@ -6,8 +6,8 @@ Description: Map any blog on a WordPress website to another domain.
 Version: 0.5.4.3
 Author: Donncha O Caoimh
 Author URI: http://ocaoimh.ie/
-
-text-domain: wordpress-mu-domain-mapping
+Text Domain: wordpress-mu-domain-mapping
+Domain Path: /languages
 */
 
 /*  Copyright Donncha O Caoimh (http://ocaoimh.ie/)
@@ -43,14 +43,14 @@ class WordPress_MU_Domain_Mapping {
 		}
 
 
-		add_action( 'init', array( $this, 'load_text_domain' ) );
+		add_action( 'plugins_loaded', array( $this, 'load_text_domain' ) );
 		add_action( 'template_redirect', array( $this, 'redirect_to_mapped_domain' ) );
 		add_action( 'delete_blog', array( $this, 'delete_blog_domain_mapping' ), 1, 2 );
 
 
 		if ( defined( 'DOMAIN_MAPPING' ) ) {
-			add_filter( 'pre_option_siteurl', array( $this, 'domain_mapping_siteurl' ) );
-			add_filter( 'pre_option_home', array( $this, 'domain_mapping_siteurl' ) );
+			add_filter( 'pre_option_siteurl', array( __CLASS__, 'domain_mapping_siteurl' ) );
+			add_filter( 'pre_option_home', array( __CLASS__, 'domain_mapping_siteurl' ) );
 
 			add_filter( 'the_content', array( $this, 'domain_mapping_post_content' ) );
 			add_action( 'wp_head', array( $this, 'remote_login_js_loader' ) );
@@ -108,7 +108,7 @@ class WordPress_MU_Domain_Mapping {
 			if ( is_super_admin() )
 				wp_die( sprintf( __( "Please uncomment the line <em>define( 'SUNRISE', 'on' );</em> or add it to your %swp-config.php", 'wordpress-mu-domain-mapping' ), ABSPATH ) );
 			else
-				wp_die( __( "This plugin has not been configured correctly yet.", 'wordpress-mu-domain-mapping' ) );
+				wp_die( __( 'This plugin has not been configured correctly yet.', 'wordpress-mu-domain-mapping' ) );
 		}
 		elseif ( ! defined( 'SUNRISE_LOADED' ) ) {
 			if ( ! $die )
@@ -117,7 +117,7 @@ class WordPress_MU_Domain_Mapping {
 			if ( is_super_admin() )
 				wp_die( sprintf( __( "Please edit your %swp-config.php and move the line <em>define( 'SUNRISE', 'on' );</em> above the last require_once() in that file or make sure you updated sunrise.php.", 'wordpress-mu-domain-mapping' ), ABSPATH ) );
 			else
-				wp_die( __( "This plugin has not been configured correctly yet.", 'wordpress-mu-domain-mapping' ) );
+				wp_die( __( 'This plugin has not been configured correctly yet.', 'wordpress-mu-domain-mapping' ) );
 		}
 
 		return false;
@@ -145,7 +145,7 @@ class WordPress_MU_Domain_Mapping {
 			return;
 
 		$protocol = is_ssl() ? 'https://' : 'http://';
-		$url      = $this->domain_mapping_siteurl( false );
+		$url      = self::domain_mapping_siteurl( false );
 
 		if ( $url && $url != untrailingslashit( $protocol . $current_blog->domain . $current_blog->path ) ) {
 			$redirect = get_site_option( 'dm_301_redirect' ) ? '301' : '302';
@@ -168,13 +168,13 @@ class WordPress_MU_Domain_Mapping {
 			$domains = $wpdb->get_col( $wpdb->prepare( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id  = %d", $blog_id ) );
 
 			do_action('dm_delete_blog_domain_mappings', $domains);
-			
+
 			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->dmtable} WHERE blog_id  = %d", $blog_id ) );
 		}
 	}
 
 
-	public function domain_mapping_siteurl( $setting ) {
+	public static function domain_mapping_siteurl( $setting ) {
 		global $wpdb, $current_site;
 
 		$option_key = 'home';
@@ -191,10 +191,10 @@ class WordPress_MU_Domain_Mapping {
 			$s = $wpdb->suppress_errors();
 
 			if ( get_site_option( 'dm_no_primary_domain' ) == 1 ) {
-				$domain = $wpdb->get_var( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}' AND domain = '" . $wpdb->escape( $_SERVER[ 'HTTP_HOST' ] ) . "' LIMIT 1" );
+				$domain = $wpdb->get_var( $wpdb->prepare( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}' AND domain = '%s' LIMIT 1", $_SERVER[ 'HTTP_HOST' ] ) );
 
 				if ( null == $domain ) {
-					self::$return_url[ $wpdb->blogid ][ $option_key ] = untrailingslashit( $this->get_original_url( $option_key ) );
+					self::$return_url[ $wpdb->blogid ][ $option_key ] = untrailingslashit( self::get_original_url( $option_key ) );
 					return self::$return_url[ $wpdb->blogid ][ $option_key ];
 				}
 			}
@@ -203,19 +203,19 @@ class WordPress_MU_Domain_Mapping {
 				$domain = $wpdb->get_var( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}' AND active = 1 LIMIT 1" );
 
 				if ( null == $domain ) {
-					self::$return_url[ $wpdb->blogid ][ $option_key ] = untrailingslashit( $this->get_original_url( $option_key ) );
+					self::$return_url[ $wpdb->blogid ][ $option_key ] = untrailingslashit( self::get_original_url( $option_key ) );
 					return self::$return_url[ $wpdb->blogid ][ $option_key ];
 				}
 			}
 
 			$wpdb->suppress_errors( $s );
 
-			$protocol = is_ssl() ? 'https://' : 'http://'; 
+			$protocol = is_ssl() ? 'https://' : 'http://';
 
 			if ( $domain ) {
 				if( 'siteurl' == $option_key )
 					self::$return_url[ $wpdb->blogid ][ $option_key ] = untrailingslashit( $protocol . $domain . $current_site->path );
-				else 
+				else
 					self::$return_url[ $wpdb->blogid ][ $option_key ] = untrailingslashit( $protocol . $domain );
 
 				$setting = self::$return_url[ $wpdb->blogid ][ $option_key ];
@@ -246,7 +246,7 @@ class WordPress_MU_Domain_Mapping {
 		static $orig_urls = array();
 
 		if ( ! isset( $orig_urls[ $id ] ) || ! isset( $orig_urls[ $id ][ $url ] ) ) {
-			if ( defined( 'DOMAIN_MAPPING' ) ) 
+			if ( defined( 'DOMAIN_MAPPING' ) )
 				remove_filter( 'pre_option_' . $url, array( $wordPress_mu_domain_mapping, 'domain_mapping_siteurl' ) );
 
 			if ( $blog_id == 0 )
@@ -264,7 +264,7 @@ class WordPress_MU_Domain_Mapping {
 
 			$orig_urls[ $id ][ $url ] = $orig_url;
 
-			if ( defined( 'DOMAIN_MAPPING' ) ) 
+			if ( defined( 'DOMAIN_MAPPING' ) )
 				add_filter( 'pre_option_' . $url, array( $wordPress_mu_domain_mapping, 'domain_mapping_siteurl' ) );
 		}
 
@@ -274,8 +274,8 @@ class WordPress_MU_Domain_Mapping {
 	public function domain_mapping_post_content( $post_content ) {
 		global $wpdb;
 
-		$orig_url = $this->get_original_url( 'siteurl' );
-		$url      = $this->domain_mapping_siteurl( 'NA' );
+		$orig_url = self::get_original_url( 'siteurl' );
+		$url      = self::domain_mapping_siteurl( 'NA' );
 
 		if ( $url == 'NA' )
 			return $post_content;
@@ -299,7 +299,7 @@ class WordPress_MU_Domain_Mapping {
 		if ( ! get_site_option( 'dm_remote_login' ) || ( isset( $_GET[ 'action' ] ) && $_GET[ 'action' ] == 'logout' ) || isset( $_GET[ 'loggedout' ] ) )
 			return false;
 
-		$url = $this->get_original_url( 'siteurl' );
+		$url = self::get_original_url( 'siteurl' );
 
 		if ( $url != site_url() ) {
 			$url .= "/wp-login.php";
@@ -321,7 +321,7 @@ class WordPress_MU_Domain_Mapping {
 		if ( get_site_option( 'dm_redirect_admin' ) ) {
 			wp_redirect( $protocol . $current_site->domain . $current_site->path . "?dm={$hash}&action=logout&blogid={$current_blog->blog_id}&k={$key}&t=" . mt_rand() );
 			exit;
-		} 
+		}
 	}
 
 
@@ -330,7 +330,7 @@ class WordPress_MU_Domain_Mapping {
 		$index = strpos( $url, '/wp-admin' );
 
 		if( $index !== false ) {
-			$url = $this->get_original_url( 'siteurl', $blog_id ) . substr( $url, $index );
+			$url = self::get_original_url( 'siteurl', $blog_id ) . substr( $url, $index );
 
 			// make sure admin_url is ssl if current page is ssl, or admin ssl is forced
 			if( ( is_ssl() || force_ssl_admin() ) && 0 === strpos( $url, 'http://' ) )
@@ -393,7 +393,7 @@ class WordPress_MU_Domain_Mapping {
 					exit;
 				}
 				else {
-					wp_die( __( "Unknown logout key", 'wordpress-mu-domain-mapping' ) );
+					wp_die( __( 'Unknown logout key', 'wordpress-mu-domain-mapping' ) );
 				}
 			}
 		}

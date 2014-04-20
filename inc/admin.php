@@ -157,25 +157,29 @@ class WordPress_MU_Domain_Mapping_Admin {
 	}
 
 
-	function handle_actions() {
+	public function handle_actions() {
+
 		global $wpdb, $parent_file;
 
 		$url = add_query_arg( array( 'page' => 'domainmapping' ), admin_url( $parent_file ) );
 
 		if ( ! empty( $_POST[ 'action' ] ) ) {
-			$domain = $wpdb->escape( $_POST[ 'domain' ] );
 
-			if ( $domain == '' )
+			$domain = $_POST[ 'domain' ];
+
+			if ( $domain == '' ) {
 				wp_die( __( 'You must enter a domain', 'wordpress-mu-domain-mapping' ) );
+			}
 
 			check_admin_referer( 'domain_mapping' );
 			do_action( 'dm_handle_actions_init', $domain );
 
 			switch( $_POST[ 'action' ] ) {
+
 				case "add":
 					do_action( 'dm_handle_actions_add', $domain );
 
-					if( null == $wpdb->get_row( "SELECT blog_id FROM {$wpdb->blogs} WHERE domain = '$domain'" ) && null == $wpdb->get_row( "SELECT blog_id FROM {$wpdb->dmtable} WHERE domain = '$domain'" ) ) {
+					if( null == $wpdb->get_row( $wpdb->prepare( "SELECT blog_id FROM {$wpdb->blogs} WHERE domain = '%s'", $domain ) ) && null == $wpdb->get_row( $wpdb->prepare( "SELECT blog_id FROM {$wpdb->dmtable} WHERE domain = '%s'", $domain ) ) ) {
 						$primary = 0;
 
 						if ( isset( $_POST[ 'primary' ] ) ) {
@@ -193,34 +197,41 @@ class WordPress_MU_Domain_Mapping_Admin {
 						exit;
 					}
 				break;
+
 				case "primary":
 					do_action('dm_handle_actions_primary', $domain);
 
 					$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->dmtable} SET active = 0 WHERE blog_id = %d", $wpdb->blogid ) );
 					$orig_url = parse_url( WordPress_MU_Domain_Mapping::get_original_url( 'siteurl' ) );
 
-					if( $domain != $orig_url[ 'host' ] )
+					if ( $domain != $orig_url[ 'host' ] ) {
 						$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->dmtable} SET active = 1 WHERE domain = %s", $domain ) );
+					}
 
 					wp_redirect( add_query_arg( array( 'updated' => 'primary' ), $url ) );
 					exit;
 				break;
-			}
-		}
-		elseif( isset( $_GET[ 'action' ] ) && $_GET[ 'action' ] == 'delete' ) {
-			$domain = $wpdb->escape( $_GET[ 'domain' ] );
 
-			if ( $domain == '' )
+			} // END switch
+
+		} elseif ( isset( $_GET[ 'action' ] ) && $_GET[ 'action' ] == 'delete' ) {
+
+			$domain = $_GET[ 'domain' ];
+
+			if ( $domain == '' ) {
 				wp_die( __( 'You must enter a domain', 'wordpress-mu-domain-mapping' ) );
+			}
 
 			check_admin_referer( "delete" . $_GET['domain'] );
 			do_action( 'dm_handle_actions_del', $domain );
-			$wpdb->query( "DELETE FROM {$wpdb->dmtable} WHERE domain = '$domain'" );
+			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->dmtable} WHERE domain = '%s'", $domain ) );
 
 			wp_redirect( add_query_arg( array( 'updated' => 'del' ), $url ) );
 			exit;
-		}
-	}
+
+		} // END if
+
+	} // END handle_actions()
 
 
 	public function redirect_admin() {
@@ -241,7 +252,7 @@ class WordPress_MU_Domain_Mapping_Admin {
 			global $current_blog;
 
 			// redirect original url to primary domain wp-admin/ - remote login is disabled!
-			$url = domain_mapping_siteurl( false );
+			$url = WordPress_MU_Domain_Mapping::domain_mapping_siteurl( false );
 			$request_uri = str_replace( $current_blog->path, '/', $_SERVER[ 'REQUEST_URI' ] );
 
 			if ( false === strpos( $url, $_SERVER[ 'HTTP_HOST' ] ) ) {
