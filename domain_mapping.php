@@ -191,7 +191,7 @@ class WordPress_MU_Domain_Mapping {
 			$s = $wpdb->suppress_errors();
 
 			if ( get_site_option( 'dm_no_primary_domain' ) == 1 ) {
-				$domain = $wpdb->get_var( $wpdb->prepare( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}' AND domain = '" . $_SERVER[ 'HTTP_HOST' ] . "' LIMIT 1" ) );
+				$domain = $wpdb->get_var( $wpdb->prepare( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}' AND domain = '%s' LIMIT 1", $_SERVER[ 'HTTP_HOST' ] ) );
 
 				if ( null == $domain ) {
 					self::$return_url[ $wpdb->blogid ][ $option_key ] = untrailingslashit( self::get_original_url( $option_key ) );

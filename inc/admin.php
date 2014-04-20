@@ -179,7 +179,7 @@ class WordPress_MU_Domain_Mapping_Admin {
 				case "add":
 					do_action( 'dm_handle_actions_add', $domain );
 
-					if( null == $wpdb->get_row( $wpdb->prepare( "SELECT blog_id FROM {$wpdb->blogs} WHERE domain = '$domain'" ) ) && null == $wpdb->get_row( $wpdb->prepare( "SELECT blog_id FROM {$wpdb->dmtable} WHERE domain = '$domain'" ) ) ) {
+					if( null == $wpdb->get_row( $wpdb->prepare( "SELECT blog_id FROM {$wpdb->blogs} WHERE domain = '%s'", $domain ) ) && null == $wpdb->get_row( $wpdb->prepare( "SELECT blog_id FROM {$wpdb->dmtable} WHERE domain = '%s'", $domain ) ) ) {
 						$primary = 0;
 
 						if ( isset( $_POST[ 'primary' ] ) ) {
@@ -224,7 +224,7 @@ class WordPress_MU_Domain_Mapping_Admin {
 
 			check_admin_referer( "delete" . $_GET['domain'] );
 			do_action( 'dm_handle_actions_del', $domain );
-			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->dmtable} WHERE domain = '$domain'" ) );
+			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->dmtable} WHERE domain = '%s'", $domain ) );
 
 			wp_redirect( add_query_arg( array( 'updated' => 'del' ), $url ) );
 			exit;
