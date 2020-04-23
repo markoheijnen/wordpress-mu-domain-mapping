@@ -744,7 +744,7 @@ function redirect_to_mapped_domain() {
 		exit;
 	}
 }
-add_action( 'template_redirect', 'redirect_to_mapped_domain' );
+add_action( 'plugins_loaded', 'redirect_to_mapped_domain' );
 
 function get_dm_hash() {
 	$remote_login_hash = get_site_option( 'dm_hash' );
