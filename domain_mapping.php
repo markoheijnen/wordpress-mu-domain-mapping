@@ -732,6 +732,10 @@ function redirect_to_mapped_domain() {
 	if ( is_a( $wp_customize, 'WP_Customize_Manager' ) )
 		return;
 
+        if ( is_admin() || is_login_page() ) {
+                return;
+        }
+
 	$protocol = is_ssl() ? 'https://' : 'http://';
 	$url = domain_mapping_siteurl( false );
 
